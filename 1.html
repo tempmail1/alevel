@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Tests 1-4</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; background-color: #f0f2f5; color: #333; }
+        .container { max-width: 900px; margin: 30px auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        h1 { text-align: center; color: #1a73e8; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
+        h2 { background: #f8f9fa; padding: 10px; border-left: 5px solid #1a73e8; margin-top: 40px; }
+        h3 { color: #5f6368; margin-top: 25px; }
+        .word-box { background: #fffbe6; border: 1px solid #ffe58f; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; font-style: italic; }
+        .word-box span { background: #fff; border: 1px solid #d9d9d9; padding: 2px 8px; border-radius: 4px; font-size: 0.9em; }
+        .question { margin-bottom: 18px; font-size: 1.05em; }
+        input[type="text"] { border: none; border-bottom: 2px solid #bdc1c6; outline: none; padding: 2px 5px; width: 180px; font-size: 1em; transition: border-color 0.3s; }
+        input[type="text"]:focus { border-bottom-color: #1a73e8; }
+        .feedback { font-size: 0.9em; margin-left: 8px; font-weight: bold; }
+        .correct-ans { color: #28a745; }
+        .wrong-ans { color: #dc3545; }
+        .btn-container { position: sticky; bottom: 20px; text-align: center; margin-top: 40px; }
+        button { padding: 12px 40px; background: #1a73e8; color: white; border: none; border-radius: 30px; cursor: pointer; font-size: 1.1em; box-shadow: 0 4px 10px rgba(26,115,232,0.3); }
+        button:hover { background: #1557b0; }
+        #result-summary { margin-top: 20px; font-size: 1.2em; font-weight: bold; text-align: center; color: #1a73e8; background: #e8f0fe; padding: 15px; border-radius: 8px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Vocabulary Comprehensive Test</h1>
+
+    <!-- TEST 1 (Source [1]) -->
+    <div class="test-section">
+        <h2>Vocabulary Test 1</h2>
+        <h3>Part 1: Suitable Word Completion</h3>
+        <div class="word-box">
+            <span>perfect holiday destination</span> <span>nature reserve</span> <span>beneficial effect</span> <span>sociable</span> <span>severe</span> <span>debate</span> <span>climate</span> <span>trailer</span> <span>historic site</span> <span>consequence</span>
+        </div>
+        <div class="question">1. The students had a heated <input type="text" data-ans="debate"> on whether homework should be canceled. [1]</div>
+        <div class="question">2. I watched the <input type="text" data-ans="trailer"> of the new superhero film and can't wait to see it. [1]</div>
+        <div class="question">3. The city was hit by a <input type="text" data-ans="severe"> storm that destroyed many houses last night. [1]</div>
+        <div class="question">4. The Great Wall is a world-famous <input type="text" data-ans="historic site"> visited by millions of tourists every year. [1]</div>
+        <div class="question">5. Being <input type="text" data-ans="sociable"> helps you make new friends when you study abroad. [1]</div>
+        <div class="question">6. You should think about the <input type="text" data-ans="consequence">s before making an important decision. [1]</div>
+        <div class="question">7. Regular exercise has a <input type="text" data-ans="beneficial effect"> on both physical and mental health. [1]</div>
+        <div class="question">8. We are not allowed to pick flowers or hunt animals in this <input type="text" data-ans="nature reserve">. [1]</div>
+        <div class="question">9. The warm and wet <input type="text" data-ans="climate"> in this region is suitable for growing tea. [1]</div>
+        <div class="question">10. With its white beaches and clear waters, Bali is a <input type="text" data-ans="perfect holiday destination"> for travelers. [1]</div>
+
+        <h3>Part 2: Correct Form of Words</h3>
+        <div class="question">1. The athlete is <input type="text" data-ans="determined"> to win the championship despite his recent injury. (determine) [1]</div>
+        <div class="question">2. Starting a business alone is an <input type="text" data-ans="ambitious"> goal that requires a lot of hard work. (ambition) [1]</div>
+        <div class="question">3. He has an <input type="text" data-ans="ambitious"> plan to build a green energy company within five years. (ambition) [1]</div>
+        <div class="question">4. My neighbor is a <input type="text" data-ans="generous"> person who always shares his homemade food with us. (generosity) [1]</div>
+        <div class="question">5. We were <input type="text" data-ans="thrilled"> to hear that our favorite team had won the championship. (thrilling) [1]</div>
+        <div class="question">6. It takes time for animals to <input type="text" data-ans="adapt"> to the changing environment. (adaptation) [1]</div>
+        <div class="question">7. His actions often <input type="text" data-ans="contradict"> his words, so few people trust him. (contradictory) [1]</div>
+        <div class="question">8. The company will give a cash <input type="text" data-ans="reward"> to employees who come up with creative ideas. (rewarding) [1]</div>
+        <div class="question">9. She was <input type="text" data-ans="thrilled"> to receive an invitation to the international art exhibition. (thrilling) [1]</div>
+        <div class="question">10. Please do not <input type="text" data-ans="contradict"> the manager in front of the clients during the meeting. (contradictory) [1]</div>
+    </div>
+
+    <!-- TEST 2 (Source [2]) -->
+    <div class="test-section">
+        <h2>Vocabulary Test 2</h2>
+        <h3>Part 1: Suitable Word Completion</h3>
+        <div class="word-box">
+            <span>living standard</span> <span>elegant</span> <span>furious</span> <span>uniform</span> <span>dispute</span> <span>glisten under the sun</span> <span>leadership</span> <span>special effects</span> <span>opening scene</span> <span>well-developed character</span>
+        </div>
+        <div class="question">1. All students in this school are required to wear a dark blue <input type="text" data-ans="uniform"> on weekdays. [2]</div>
+        <div class="question">2. She wore an <input type="text" data-ans="elegant"> silk dress to the graduation ceremony. [2]</div>
+        <div class="question">3. The science fiction movie is famous for its amazing <input type="text" data-ans="special effects">. [2]</div>
+        <div class="question">4. My parents were <input type="text" data-ans="furious"> when they found out I had lied to them. [2]</div>
+        <div class="question">5. The novel is praised for its <input type="text" data-ans="well-developed character">s with unique personalities. [2]</div>
+        <div class="question">6. The team's success is largely due to the captain's excellent <input type="text" data-ans="leadership">. [2]</div>
+        <div class="question">7. There is a <input type="text" data-ans="dispute"> between the two countries over the ownership of the island. [2]</div>
+        <div class="question">8. The development of industry has greatly improved people's <input type="text" data-ans="living standard">. [2]</div>
+        <div class="question">9. The <input type="text" data-ans="opening scene"> of the movie shows a small village covered in snow. [2]</div>
+        <div class="question">10. The dewdrops on the grass <input type="text" data-ans="glisten under the sun"> in the early morning. [2]</div>
+
+        <h3>Part 2: Correct Form of Words</h3>
+        <div class="question">1. Small local shops must <input type="text" data-ans="compete"> with large supermarkets to attract customers. (competition) [2]</div>
+        <div class="question">2. He felt <input type="text" data-ans="embarrassed"> when he realized he had been wearing his shirt inside out. (embarrass) [2]</div>
+        <div class="question">3. Over 200 athletes will <input type="text" data-ans="compete"> for the gold medal in the upcoming sports meeting. (competition) [2]</div>
+        <div class="question">4. He felt <input type="text" data-ans="embarrassed"> when he realized he had made a silly mistake in public. (embarrass) [2]</div>
+        <div class="question">5. He is interested in environmental <input type="text" data-ans="science"> and wants to protect the planet. (scientific) [2]</div>
+        <div class="question">6. The team's <input type="text" data-ans="opponents"> in the final match are known for their strong defense and fast attacks. (oppose) [2]</div>
+        <div class="question">7. It can be difficult to <input type="text" data-ans="adapt"> to a new time zone after a long international flight. (adaptation) [2]</div>
+        <div class="question">8. Thank you for your <input type="text" data-ans="generous"> donation to the charity supporting homeless people. (generosity) [2]</div>
+        <div class="question">9. The little girl was <input type="text" data-ans="frightened"> by the loud thunder during the storm. (frighten) [2]</div>
+        <div class="question">10. We were <input type="text" data-ans="astonished"> to hear that our classmate had won the national competition. (astonishing) [2]</div>
+    </div>
+
+    <!-- TEST 3 (Source [3]) -->
+    <div class="test-section">
+        <h2>Vocabulary Test 3</h2>
+        <h3>Part 1: Suitable Word Completion</h3>
+        <div class="word-box">
+            <span>carbon footprint</span> <span>on edge</span> <span>tourist attractions</span> <span>drawn into</span> <span>dilemma</span> <span>issue</span> <span>in a festive mood</span> <span>volunteer</span> <span>must-see film</span> <span>preposterous</span>
+        </div>
+        <div class="question">1. Everyone in the town is <input type="text" data-ans="in a festive mood"> before the Spring Festival. [3]</div>
+        <div class="question">2. Many young people <input type="text" data-ans="volunteer"> to help clean up the park on weekends. [3]</div>
+        <div class="question">3. I was <input type="text" data-ans="drawn into"> the mystery novel as soon as I started reading it. [3]</div>
+        <div class="question">4. This award-winning drama has become a <input type="text" data-ans="must-see film"> for movie lovers. [3]</div>
+        <div class="question">5. Using public transportation instead of driving can reduce your <input type="text" data-ans="carbon footprint">. [3]</div>
+        <div class="question">6. I've been <input type="text" data-ans="on edge"> all day waiting for the result of the exam. [3]</div>
+        <div class="question">7. The government is discussing how to solve the <input type="text" data-ans="issue"> of air pollution. [3]</div>
+        <div class="question">8. It is <input type="text" data-ans="preposterous"> to believe that the earth is flat in the 21st century. [3]</div>
+        <div class="question">9. She faced a <input type="text" data-ans="dilemma">: should she choose to study abroad or stay with her family? [3]</div>
+        <div class="question">10. The Eiffel Tower and the Louvre Museum are the most popular <input type="text" data-ans="tourist attractions"> in Paris. [3]</div>
+
+        <h3>Part 2: Correct Form of Words</h3>
+        <div class="question">1. The audience was <input type="text" data-ans="astonished"> by the magician's trick and burst into applause. (astonishing) [3]</div>
+        <div class="question">2. Climate change is a <input type="text" data-ans="global"> issue that requires cooperation from all countries. (globalize) [3]</div>
+        <div class="question">3. Many countries are investing in <input type="text" data-ans="renewable"> energy sources like wind and solar power. (renew) [3]</div>
+        <div class="question">4. You can count on Lucy—she's one of the most <input type="text" data-ans="reliable"> members in our team. (reliability) [3]</div>
+        <div class="question">5. She is <input type="text" data-ans="determined"> to finish her university degree within the next three years. (determine) [3]</div>
+        <div class="question">6. My younger brother loves reading <input type="text" data-ans="science"> fiction books about space travel. (scientific) [3]</div>
+        <div class="question">7. She screamed in <input type="text" data-ans="frustration"> when her computer crashed and she lost her work. (frustrate) [3]</div>
+        <div class="question">8. Helping others can be difficult, but it is often a deeply <input type="text" data-ans="rewarding"> experience. (reward) [3]</div>
+        <div class="question">9. My old watch is incredibly <input type="text" data-ans="reliable"> and has never shown the wrong time. (reliability) [3]</div>
+        <div class="question">10. Social media has allowed companies to <input type="text" data-ans="globalize"> their products and reach new markets. (globalize) [3]</div>
+    </div>
+
+    <!-- TEST 4 (Source [4]) -->
+    <div class="test-section">
+        <h2>Vocabulary Test 4</h2>
+        <h3>Part 1: Suitable Word Completion</h3>
+        <div class="word-box">
+            <span>sensitive</span> <span>selfish</span> <span>final scene</span> <span>outweigh</span> <span>identify with the character</span> <span>visual impact</span> <span>magnificent</span> <span>identify</span> <span>fascinating</span> <span>cozy atmosphere</span>
+        </div>
+        <div class="question">1. The colorful posters have a strong <input type="text" data-ans="visual impact"> on passers-by. [4]</div>
+        <div class="question">2. Please be <input type="text" data-ans="sensitive"> to the feelings of classmates who are going through a hard time. [4]</div>
+        <div class="question">3. It is <input type="text" data-ans="selfish"> to take all the snacks without sharing them with your siblings. [4]</div>
+        <div class="question">4. It is difficult to <input type="text" data-ans="identify"> the exact cause of this disease without further tests. [4]</div>
+        <div class="question">5. We stood at the top of the mountain and admired the <input type="text" data-ans="magnificent"> view of the valley. [4]</div>
+        <div class="question">6. Many teenagers can <input type="text" data-ans="identify with the character"> in the story who struggles with school pressure. [4]</div>
+        <div class="question">7. The documentary about marine life is absolutely <input type="text" data-ans="fascinating">. [4]</div>
+        <div class="question">8. Many viewers were moved to tears by the touching <input type="text" data-ans="final scene"> of the film. [4]</div>
+        <div class="question">9. The small café has a <input type="text" data-ans="cozy atmosphere"> with soft music and warm lighting. [4]</div>
+        <div class="question">10. The advantages of this new policy far <input type="text" data-ans="outweigh"> its disadvantages. [4]</div>
+
+        <h3>Part 2: Correct Form of Words</h3>
+        <div class="question">1. The teacher asked us to <input type="text" data-ans="continue"> reading the passage after the break. (continuous) [4]</div>
+        <div class="question">2. She couldn't hide her <input type="text" data-ans="frustration"> when she failed the driving test again. (frustrate) [4]</div>
+        <div class="question">3. It is exhausting to talk to him because he is so <input type="text" data-ans="argumentative"> about small things. (argue) [4]</div>
+        <div class="question">4. The political <input type="text" data-ans="opposition"> debated the new law for hours before reaching a decision. (oppose) [4]</div>
+        <div class="question">5. Solar energy and wind energy are two important types of <input type="text" data-ans="renewable"> energy. (renew) [4]</div>
+        <div class="question">6. She screamed in <input type="text" data-ans="frustration"> when her computer crashed and she lost her work. (frustrate) [4]</div>
+        <div class="question">7. The boy is quite <input type="text" data-ans="argumentative"> and always tries to prove that he is right. (argue) [4]</div>
+        <div class="question">8. You need great <input type="text" data-ans="concentration"> to solve this complex math problem. (concentrate) [4]</div>
+        <div class="question">9. He felt <input type="text" data-ans="embarrassed"> when he realized he had made a silly mistake in public. (embarrass) [4]</div>
+        <div class="question">10. You need total <input type="text" data-ans="concentration"> to solve this complex puzzle in under ten minutes. (concentrate) [4]</div>
+    </div>
+
+    <div class="btn-container">
+        <button onclick="gradeTest()">提交并检查答案</button>
+        <div id="result-summary"></div>
+    </div>
+</div>
+
+<script>
+    function gradeTest() {
+        const inputs = document.querySelectorAll('input[type="text"]');
+        let score = 0;
+        let total = inputs.length;
+
+        inputs.forEach(input => {
+            const userVal = input.value.trim().toLowerCase();
+            const correctVal = input.getAttribute('data-ans').toLowerCase();
+            
+            // 清除之前的反馈
+            const existingFeedback = input.nextElementSibling;
+            if (existingFeedback && existingFeedback.classList.contains('feedback')) {
+                existingFeedback.remove();
+            }
+
+            const feedback = document.createElement('span');
+            feedback.className = 'feedback';
+
+            if (userVal === correctVal) {
+                score++;
+                input.style.borderColor = "#28a745";
+                feedback.innerHTML = "✓";
+                feedback.className += " correct-ans";
+            } else {
+                input.style.borderColor = "#dc3545";
+                feedback.innerHTML = `✗ (正确: ${input.getAttribute('data-ans')})`;
+                feedback.className += " wrong-ans";
+            }
+            input.parentNode.insertBefore(feedback, input.nextSibling);
+        });
+
+        const resultDiv = document.getElementById('result-summary');
+        resultDiv.style.display = "block";
+        resultDiv.innerHTML = `测试完成！您的得分：${score} / ${total} (正确率: ${Math.round(score/total*100)}%)`;
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
