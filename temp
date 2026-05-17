@@ -1,15 +1,12 @@
- sudo apt update
-命中:1 https://professional-security.chinauos.com eagle/1070 InRelease                                                                                                         
-命中:2 https://professional-packages.chinauos.com/desktop-professional eagle InRelease                                                                                         
-获取:3 https://app-store-files.uniontech.com/260515182927469/appstore eagle-pro InRelease [6,134 B]                                                                            
-获取:4 https://apt.v2raya.org v2raya InRelease [9,794 B]                                                                                                                       
-错误:4 https://apt.v2raya.org v2raya InRelease                                                                          
-  下列签名无效： EXPKEYSIG 354E516D494EF95F mzz2017 (apt) <mzz@tuta.io>
-获取:5 https://windsurf-stable.codeiumdata.com/wVxQEIWkwPUEAGf3/apt stable InRelease [1,599 B]
-获取:6 https://windsurf-stable.codeiumdata.com/wVxQEIWkwPUEAGf3/apt stable/main amd64 Packages [815 B]
-命中:7 https://pro-driver-packages.uniontech.com eagle InRelease                                                                                                               
-正在读取软件包列表... 完成                         
-W: GPG 错误：https://apt.v2raya.org v2raya InRelease: 下列签名无效： EXPKEYSIG 354E516D494EF95F mzz2017 (apt) <mzz@tuta.io>
-E: 仓库 “https://apt.v2raya.org v2raya InRelease” 没有数字签名。
-N: 无法安全地用该源进行更新，所以默认禁用该源。
-N: 参见 apt-secure(8) 手册以了解仓库创建和用户配置方面的细节。
+sudo apt install windsurf
+正在读取软件包列表... 完成
+正在分析软件包的依赖关系树       
+正在读取状态信息... 完成       
+有一些软件包无法被安装。如果您用的是 unstable 发行版，这也许是
+因为系统无法达到您要求的状态造成的。该版本中可能会有一些您需要的软件
+包尚未被创建或是它们已被从新到(Incoming)目录移出。
+下列信息可能会对解决问题有所帮助：
+
+下列软件包有未满足的依赖关系：
+ windsurf : 依赖: libxkbfile1 (>= 1:1.1.0) 但是 1:1.0.9.1-1+rebuild1 正要被安装
+E: 无法修正错误，因为您要求某些软件包保持现状，就是它们破坏了软件包间的依赖关系。
