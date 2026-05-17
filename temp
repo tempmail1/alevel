@@ -1,3 +1,12 @@
+codeium.windsurfpyright
+danielroedl.meld-diff
+foam.foam-vscode
+ms-python.debugpy
+ms-python.python
+ms-python.vscode-python-envs
+rooveterinaryinc.roo-cline
+
+
 既然你要在 Windsurf 里依靠 **Roo Code (原 Roo Cline)** 扩展来灵活外接其他大模型（比如通过 API 连接 DeepSeek、Claude 等），那么确保 Windsurf 的插件能够完美吃到你的 v2rayA 代理，就是维持高响应率的生命线。
 
 以下是针对这两个需求的架构师级快速指南：
