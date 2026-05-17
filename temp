@@ -1,49 +1,78 @@
-遵从我们刚才约定的“状态一致性与清理原则”**：由于刚才的 `apt install` 动作被包管理器直接拦截并报错退出，它**并没有**在你的系统里留下任何残破的半安装文件，所以这次我们**不需要执行清理和回滚操作，系统依然是纯净的。
+既然你要在 Windsurf 里依靠 **Roo Code (原 Roo Cline)** 扩展来灵活外接其他大模型（比如通过 API 连接 DeepSeek、Claude 等），那么确保 Windsurf 的插件能够完美吃到你的 v2rayA 代理，就是维持高响应率的生命线。
+
+以下是针对这两个需求的架构师级快速指南：
 
 ---
 
-### 为什么会报错？（架构分析）
+## 一、 Windsurf 怎么设置使用 v2rayA 代理？
 
-这是一个非常经典的 **“老树开新花”导致的底层依赖断层** 问题。
+虽然我们在系统里设置了 `~/.bashrc` 的终端代理，但由于 UOS 的桌面环境隔离，通过图标启动的 Windsurf 可能会漏掉环境变量。为了给 Roo Code 的 API 请求拉起最稳妥的“防丢包”隧道，我们需要在 Windsurf 内部进行显式对齐。
 
-统信 UOS 20 的底层是基于 **Debian 10** 开发的，属于追求极度稳定的企业级老系统。而 Windsurf 作为最新的 AI 编程工具，它是基于比较新的环境（Debian 11/12）打包的。
-报错明确指出：Windsurf 需要一个处理键盘事件的底层图形库 `libxkbfile1`，并且版本要求必须 **大于等于 1.1.0**。但是 UOS 20 系统源里能提供的最高版本只有 `1.0.9`。
+### 1. 软件内强制绑定 HTTP 代理
 
-### 破局方案：跨版本“借用”上游依赖（外科手术式修复）
-
-作为架构师，我们绝不推荐强行修改 UOS 的系统主源（那会引发灾难性的依赖崩塌）。
-
-最安全、最优雅的做法是：**单独去 Debian 11（Bullseye）的官方仓库里，把这个特定版本的小文件（仅 70KB）精准下载下来，通过物理覆盖的方式安装。** 它没有任何深层依赖，不会破坏 UOS 的稳定性。
-
-请在终端中依次执行以下 3 步：
-
-#### 1. 单独下载高版本的 `libxkbfile1` 依赖包
-
-通过终端（现在已经有代理加持，秒下）直接拉取 Debian 官方包：
-
-```bash
-wget http://ftp.cn.debian.org/debian/pool/main/libx/libxkbfile/libxkbfile1_1.1.0-1_amd64.deb -O /tmp/libxkbfile1_1.1.0.deb
+1. 在 UOS 的 Windsurf 界面中，按下键盘快捷键 `Ctrl + ,`（打开设置）。
+2. 在顶部的搜索栏输入：**`proxy`**。
+3. 找到 **`Http: Proxy`**，在输入框中填入你 v2rayA 的本地出口：
+```text
+http://127.0.0.1:20171
 
 ```
 
-#### 2. 手动物理安装依赖
 
-用 `dpkg` 强行把这个高版本库注入到系统中，满足 Windsurf 的前置条件：
+4. 找到 **`Http: Proxy Strict SSL`**，**务必将其“取消勾选”**（关闭严格 SSL 校验，防止信创环境本地证书冲突导致 Roo Code 连接 API 时报错）。
 
-```bash
-sudo dpkg -i /tmp/libxkbfile1_1.1.0.deb
+### 2. 检查 Roo Code 的连接
+
+在 Windsurf 内安装好 Roo Code 扩展后，你在配置 API Key（如 OpenRouter、Anthropic 或 DeepSeek）时，由于有了上述设置，Roo Code 发起的所有底层网络请求都会被无缝重定向到 v2rayA 隧道中。
+
+---
+
+## 二、 快速将 Windows 上的插件移植到 UOS（拒绝手动一个个搜）
+
+千万不要在 UOS 的应用市场里一条条去搜索重新下载，VS Code 生态（包括 Windsurf）有非常高效的一键克隆方法。我们可以通过**一条终端命令**，直接把 Windows 的插件列表导出，再到 UOS 里一键“复刻”。
+
+因为 Windsurf 的命令行叫 `windsurf`（或者你刚刚注册的快捷命令 `serf`），它的参数与 VS Code 完全兼容。
+
+### 第一步：在 Windows 电脑上导出插件列表
+
+1. 在 Windows 上打开终端（PowerShell 或 CMD）。
+2. 执行以下命令，将当前安装的所有插件名字导出为一个文本文件：
+```powershell
+windsurf --list-extensions > extensions.txt
 
 ```
 
-*(如果此时它提示任何其他底层包缺失，那说明跨版本借用失败，我会立刻带你进行 rollback 并切换到免安装的 `.tar.gz` 方案。但根据我的经验，这个包大概率会无痛安装成功。)*
 
-#### 3. 再次向 Windsurf 发起冲锋
+*(如果提示找不到 windsurf 命令，说明你在 Windows 上装的是 VS Code，那就可以把命令改成 `code --list-extensions > extensions.txt`)*
 
-依赖地基垫高之后，重新执行刚才被阻断的命令：
+### 第二步：把 `extensions.txt` 传到 UOS
+
+用那根 `192.168.100.x` 的网络连线或者 ToDesk，把这个 `extensions.txt` 文件直接传到 UOS 的 **家目录 (`~`)** 下。
+
+### 第三步：在 UOS 上一键自动化安装
+
+打开 UOS 的终端，利用 Linux 强大的管道机制，一键让系统自动把列表里的所有插件全部挂代理拉下来：
 
 ```bash
-sudo apt install windsurf -y
+# 确保当前的终端已经加载了代理环境（如果没加载可以先敲 export 那两行）
+cat ~/extensions.txt | xargs -n 1 windsurf --install-extension
 
 ```
 
-这次，包管理器发现 `libxkbfile1` 的版本终于达标了，就会直接放行，一路绿灯完成安装。试一下！
+系统会开始刷屏，自动去市场上把你 Windows 里的 Roo Code、以及你熟悉的所有主题、高亮、语言包无缝下载并安装到这台海光 C86 物理机上。
+
+---
+
+### 💡 架构师的最后提醒：配置文件（Settings.json）也可以迁移
+
+如果你在 Windows 上的 Roo Code 里已经配好了大模型的 API 密钥（Keys）和自定义 Prompts，不想在 UOS 上重新配一遍，你可以直接去 Windows 的以下路径找到配置文件：
+
+* `%APPDATA%\Windsurf\User\settings.json`
+
+打开它，把里面关于 Roo Code 的配置片段（通常以 `"roo-cline.`" 或 `"cliner.`" 开头），直接复制粘贴到 UOS 版 Windsurf 的 `settings.json` 中。这样，你的整个 AI 开发手感就 100% 完美平移过来了！
+
+现在可以执行导出和一键安装了，搞定后你的 UOS 编程堡垒就彻底满血复活了。
+
+```
+
+```
