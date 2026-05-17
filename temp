@@ -1,87 +1,63 @@
-codeium.windsurfpyright
-danielroedl.meld-diff
-foam.foam-vscode
-ms-python.debugpy
-ms-python.python
-ms-python.vscode-python-envs
-rooveterinaryinc.roo-cline
+部署现代化的前端构建工具，特别是像 Slidev 这样用于构建结构化（如视觉骨架层、信息容器层、内容组件层）演示文稿的框架，对 Node.js 的版本要求通常比较苛刻（通常需要 v18 甚至 v20 以上版本）。
 
+在 UOS 这样的 Debian 系信创系统中，**作为架构师，我们绝不能直接使用 `sudo apt install nodejs**`。因为 UOS 官方软件源里打包的 Node.js 版本往往非常古老，不仅无法运行现代框架，后续全局安装 npm 包时还会频繁遇到令人抓狂的 `EACCES` 权限报错。
 
-既然你要在 Windsurf 里依靠 **Roo Code (原 Roo Cline)** 扩展来灵活外接其他大模型（比如通过 API 连接 DeepSeek、Claude 等），那么确保 Windsurf 的插件能够完美吃到你的 v2rayA 代理，就是维持高响应率的生命线。
+既然咱们已经通过 `~/.bashrc` 里的 `export` 彻底打通了终端的海外网络，最专业、最优雅的方案是使用 **NVM (Node Version Manager)** 来进行用户级的版本隔离安装。
 
-以下是针对这两个需求的架构师级快速指南：
+请在 UOS 终端中依次执行以下步骤：
 
----
+### 第一步：安装 NVM (Node 版本管理器)
 
-## 一、 Windsurf 怎么设置使用 v2rayA 代理？
-
-虽然我们在系统里设置了 `~/.bashrc` 的终端代理，但由于 UOS 的桌面环境隔离，通过图标启动的 Windsurf 可能会漏掉环境变量。为了给 Roo Code 的 API 请求拉起最稳妥的“防丢包”隧道，我们需要在 Windsurf 内部进行显式对齐。
-
-### 1. 软件内强制绑定 HTTP 代理
-
-1. 在 UOS 的 Windsurf 界面中，按下键盘快捷键 `Ctrl + ,`（打开设置）。
-2. 在顶部的搜索栏输入：**`proxy`**。
-3. 找到 **`Http: Proxy`**，在输入框中填入你 v2rayA 的本地出口：
-```text
-http://127.0.0.1:20171
-
-```
-
-
-4. 找到 **`Http: Proxy Strict SSL`**，**务必将其“取消勾选”**（关闭严格 SSL 校验，防止信创环境本地证书冲突导致 Roo Code 连接 API 时报错）。
-
-### 2. 检查 Roo Code 的连接
-
-在 Windsurf 内安装好 Roo Code 扩展后，你在配置 API Key（如 OpenRouter、Anthropic 或 DeepSeek）时，由于有了上述设置，Roo Code 发起的所有底层网络请求都会被无缝重定向到 v2rayA 隧道中。
-
----
-
-## 二、 快速将 Windows 上的插件移植到 UOS（拒绝手动一个个搜）
-
-千万不要在 UOS 的应用市场里一条条去搜索重新下载，VS Code 生态（包括 Windsurf）有非常高效的一键克隆方法。我们可以通过**一条终端命令**，直接把 Windows 的插件列表导出，再到 UOS 里一键“复刻”。
-
-因为 Windsurf 的命令行叫 `windsurf`（或者你刚刚注册的快捷命令 `serf`），它的参数与 VS Code 完全兼容。
-
-### 第一步：在 Windows 电脑上导出插件列表
-
-1. 在 Windows 上打开终端（PowerShell 或 CMD）。
-2. 执行以下命令，将当前安装的所有插件名字导出为一个文本文件：
-```powershell
-windsurf --list-extensions > extensions.txt
-
-```
-
-
-*(如果提示找不到 windsurf 命令，说明你在 Windows 上装的是 VS Code，那就可以把命令改成 `code --list-extensions > extensions.txt`)*
-
-### 第二步：把 `extensions.txt` 传到 UOS
-
-用那根 `192.168.100.x` 的网络连线或者 ToDesk，把这个 `extensions.txt` 文件直接传到 UOS 的 **家目录 (`~`)** 下。
-
-### 第三步：在 UOS 上一键自动化安装
-
-打开 UOS 的终端，利用 Linux 强大的管道机制，一键让系统自动把列表里的所有插件全部挂代理拉下来：
+得益于咱们的终端已经处于外网加速状态，你可以直接毫无阻力地从 GitHub 拉取最新的 NVM 安装脚本：
 
 ```bash
-# 确保当前的终端已经加载了代理环境（如果没加载可以先敲 export 那两行）
-cat ~/extensions.txt | xargs -n 1 windsurf --install-extension
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 
 ```
 
-系统会开始刷屏，自动去市场上把你 Windows 里的 Roo Code、以及你熟悉的所有主题、高亮、语言包无缝下载并安装到这台海光 C86 物理机上。
+*(执行完毕后，脚本会自动将 NVM 的环境变量写入你的 `~/.bashrc` 中)*
+
+### 第二步：重新加载环境变量
+
+为了让刚才安装的 NVM 命令立刻生效，执行：
+
+```bash
+source ~/.bashrc
+
+```
+
+### 第三步：安装最新的 Node.js LTS (长期支持版)
+
+NVM 生效后，直接用它拉取当前工业界最稳定、兼容性最好的 LTS 版本（通常是 v20.x 或 v22.x）：
+
+```bash
+nvm install --lts
+
+```
+
+*(由于终端挂了代理，这个几万兆的二进制包应该会秒下完)*
+
+### 第四步：验证安装结果
+
+敲入以下两条命令，确认“双引擎”已经就位：
+
+```bash
+node -v
+npm -v
+
+```
+
+*如果分别打印出了具体的版本号（例如 `v20.x.x` 和 `10.x.x`），说明核心环境已经完美搭建。*
 
 ---
 
-### 💡 架构师的最后提醒：配置文件（Settings.json）也可以迁移
+### 💡 架构师附加配置：让 npm 包管理更丝滑
 
-如果你在 Windows 上的 Roo Code 里已经配好了大模型的 API 密钥（Keys）和自定义 Prompts，不想在 UOS 上重新配一遍，你可以直接去 Windows 的以下路径找到配置文件：
+虽然你的终端已经挂了代理，npm 直接去国外官方源拉取依赖包毫无压力。但为了应对未来可能的复杂网络环境，或者在编写自动化脚本时不依赖代理，建议将 npm 的默认下载源切换为国内最高速的**淘宝/阿里云镜像源**：
 
-* `%APPDATA%\Windsurf\User\settings.json`
-
-打开它，把里面关于 Roo Code 的配置片段（通常以 `"roo-cline.`" 或 `"cliner.`" 开头），直接复制粘贴到 UOS 版 Windsurf 的 `settings.json` 中。这样，你的整个 AI 开发手感就 100% 完美平移过来了！
-
-现在可以执行导出和一键安装了，搞定后你的 UOS 编程堡垒就彻底满血复活了。
+```bash
+npm config set registry https://registry.npmmirror.com/
 
 ```
 
-```
+完成这一步后，你的 UOS 就拥有了一个完美隔离、且版本随时可控的 Node 生态环境。无论是编译工业仿真平台的前端控制台，还是跑各种自动化脚本，都不会再有任何底层依赖的阻碍了。
