@@ -754,5 +754,393 @@ NTFS 盘只负责资料、模板、归档和跨 Windows/UOS 共享
 [3]: https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/?utm_source=chatgpt.com "Docker Ce | 镜像站使用帮助 | 清华大学开源软件镜像站 ..."
 [4]: https://docs.docker.com/engine/daemon/proxy/?utm_source=chatgpt.com "Daemon proxy configuration | Docker Docs"
 [5]: https://github.com/nvm-sh/nvm?utm_source=chatgpt.com "GitHub - nvm-sh/nvm: Node Version Manager - POSIX-compliant bash script ..."
+
+
+
+----
+你这个结果说明：**Docker 已经安装成功，问题出在 Docker daemon 拉取镜像时无法访问镜像仓库。**
+
+错误点是：
+
+```text id="z0h4fp"
+Unable to find image 'hello-world:latest' locally
+docker: error response from daemon: Get "https://xxxx:443": i/o timeout
+```
+
+含义是：
+
+```text id="0hhl2a"
+本地没有 hello-world 镜像
+Docker daemon 尝试访问远端 registry
+访问 https://xxxx:443 超时
+```
+
+这不是 `buster` 本身的问题，也不是 Docker 没装好，而是 **dockerd 的网络没有通**。你终端能翻墙，不代表 Docker 能翻墙，因为 `docker pull` 是由后台的 `dockerd` 守护进程访问网络，Docker 官方文档也明确说明 Docker daemon 需要单独配置代理。([Docker Documentation][1])
+
+---
+
+# 一、先判断是 Docker Hub 直连问题，还是代理没给 dockerd 生效
+
+先执行：
+
+```bash
+curl -I https://registry-1.docker.io/v2/
+```
+
+如果网络正常，常见返回应类似：
+
+```text
+HTTP/1.1 401 Unauthorized
+```
+
+`401` 是正常的，说明能连到 Docker Hub，只是未认证。
+
+如果直接超时，再测试走 v2rayA：
+
+```bash
+curl -I -x http://127.0.0.1:20171 https://registry-1.docker.io/v2/
+```
+
+再测：
+
+```bash
+curl -I -x http://127.0.0.1:20172 https://registry-1.docker.io/v2/
+```
+
+判断：
+
+| 测试结果                            | 说明                         |
+| ------------------------------- | -------------------------- |
+| 不带代理超时，带 `20171/20172` 返回 `401` | Docker daemon 需要配置代理       |
+| 带 `20171/20172` 也超时             | v2rayA 的 HTTP 代理端口或节点本身有问题 |
+| `20171` 失败，`20172` 成功           | dockerd 代理用 `20172`        |
+| 两个都成功                           | 推荐 dockerd 用 `20171`，规则更简单 |
+
+你之前 `20171` 访问 Google HTTPS 出现过 OpenSSL 错误，所以这里必须实际测试 Docker Hub。不要直接假设 `20171` 一定可用。
+
+---
+
+# 二、给 Docker daemon 配置 v2rayA 代理
+
+假设你测试后发现这个能通：
+
+```bash
+curl -I -x http://127.0.0.1:20171 https://registry-1.docker.io/v2/
+```
+
+那就给 Docker daemon 配置 `20171`。
+
+如果 `20172` 才能通，把下面的 `20171` 改成 `20172`。
+
+执行：
+
+```bash
+sudo mkdir -p /etc/systemd/system/docker.service.d
+```
+
+创建代理配置：
+
+```bash
+sudo tee /etc/systemd/system/docker.service.d/http-proxy.conf > /dev/null <<'EOF'
+[Service]
+Environment="HTTP_PROXY=http://127.0.0.1:20171"
+Environment="HTTPS_PROXY=http://127.0.0.1:20171"
+Environment="NO_PROXY=localhost,127.0.0.1,::1,*.local,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+EOF
+```
+
+重新加载并重启 Docker：
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+确认代理是否已经注入到 dockerd：
+
+```bash
+systemctl show --property=Environment docker
+```
+
+应看到类似：
+
+```text
+Environment=HTTP_PROXY=http://127.0.0.1:20171 HTTPS_PROXY=http://127.0.0.1:20171 ...
+```
+
+然后再测：
+
+```bash
+docker pull hello-world
+docker run --rm hello-world
+```
+
+Docker 官方文档说明，Docker daemon 的代理可通过 systemd 环境变量或 daemon 配置文件设置；在 Linux Engine 环境下，这正是处理 `docker pull` 访问外部 registry 的正确位置。([Docker Documentation][1])
+
+---
+
+# 三、同时建议配置 Docker 镜像加速
+
+即使代理可用，Docker Hub 在国内网络下也经常慢。Docker 官方文档说明，可以通过 `/etc/docker/daemon.json` 的 `registry-mirrors` 配置 registry mirror。([Docker Documentation][2])
+
+你之前已经建议过 Docker 数据目录放：
+
+```text
+/data/uos/40_Containers_VM/docker
+```
+
+所以建议你的 `/etc/docker/daemon.json` 这样写：
+
+```bash
+sudo mkdir -p /etc/docker
+
+sudo tee /etc/docker/daemon.json > /dev/null <<'EOF'
+{
+  "data-root": "/data/uos/40_Containers_VM/docker",
+  "registry-mirrors": [
+    "https://docker.m.daocloud.io"
+  ],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m",
+    "max-file": "3"
+  }
+}
+EOF
+```
+
+然后：
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+检查配置：
+
+```bash
+docker info | grep -A 10 -E "Docker Root Dir|Registry Mirrors"
+```
+
+应看到：
+
+```text
+Docker Root Dir: /data/uos/40_Containers_VM/docker
+Registry Mirrors:
+ https://docker.m.daocloud.io/
+```
+
+再试：
+
+```bash
+docker pull hello-world
+docker run --rm hello-world
+```
+
+注意：国内公共镜像源可用性会变化。如果你有阿里云账号，更稳的是去阿里云容器镜像服务里开通自己的专属 Docker Hub 镜像加速地址，然后替换 `registry-mirrors`。
+
+---
+
+# 四、如果还是超时，按这个顺序定位
+
+## 1. 看 Docker 实际访问的是哪个域名
+
+你报错里写的是：
+
+```text
+https://xxxx:443
+```
+
+请重点看 `xxxx` 是什么。
+
+常见有：
+
+```text
+registry-1.docker.io
+auth.docker.io
+production.cloudflare.docker.com
+docker.m.daocloud.io
+某个你配置的 mirror 域名
+```
+
+如果是 `docker.m.daocloud.io` 超时，说明镜像源不可达，换 mirror 或走代理。
+
+如果是 `registry-1.docker.io` / `auth.docker.io` 超时，说明 Docker Hub 直连失败，需要代理。
+
+---
+
+## 2. 用 curl 分别测试这些域名
+
+```bash
+curl -I https://registry-1.docker.io/v2/
+curl -I https://auth.docker.io/
+curl -I https://production.cloudflare.docker.com/
+```
+
+再走代理测试：
+
+```bash
+curl -I -x http://127.0.0.1:20171 https://registry-1.docker.io/v2/
+curl -I -x http://127.0.0.1:20171 https://auth.docker.io/
+curl -I -x http://127.0.0.1:20171 https://production.cloudflare.docker.com/
+```
+
+如果 `20171` 不行，换：
+
+```bash
+curl -I -x http://127.0.0.1:20172 https://registry-1.docker.io/v2/
+```
+
+哪个端口 curl 能通，Docker daemon 就用哪个端口。
+
+---
+
+## 3. 看 Docker 日志
+
+```bash
+sudo journalctl -u docker -e --no-pager
+```
+
+实时观察：
+
+```bash
+sudo journalctl -u docker -f
+```
+
+另一个终端执行：
+
+```bash
+docker pull hello-world
+```
+
+日志里如果看到：
+
+```text
+proxyconnect tcp
+connection refused
+i/o timeout
+no such host
+TLS handshake timeout
+```
+
+对应判断：
+
+| 日志                                                     | 可能原因                      |
+| ------------------------------------------------------ | ------------------------- |
+| `proxyconnect tcp 127.0.0.1:20171: connection refused` | v2rayA 没启动或端口不对           |
+| `i/o timeout`                                          | dockerd 未走代理，或代理后链路超时     |
+| `no such host`                                         | DNS 问题                    |
+| `TLS handshake timeout`                                | 代理链路慢、节点异常、Docker Hub 被阻断 |
+| `403/429`                                              | 镜像源限流或 Docker Hub 限制      |
+
+---
+
+# 五、你的推荐最终配置
+
+我建议你当前用这个组合：
+
+```text
+Docker daemon 代理：v2rayA HTTP 端口 20171 或 20172
+Docker data-root：/data/uos/40_Containers_VM/docker
+Docker registry mirror：先配一个可用镜像源
+Docker pull 测试：hello-world、alpine、nginx
+```
+
+最终配置文件如下。
+
+## `/etc/systemd/system/docker.service.d/http-proxy.conf`
+
+如果 `20171` 可用：
+
+```ini
+[Service]
+Environment="HTTP_PROXY=http://127.0.0.1:20171"
+Environment="HTTPS_PROXY=http://127.0.0.1:20171"
+Environment="NO_PROXY=localhost,127.0.0.1,::1,*.local,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+```
+
+如果 `20172` 可用，就改成：
+
+```ini
+[Service]
+Environment="HTTP_PROXY=http://127.0.0.1:20172"
+Environment="HTTPS_PROXY=http://127.0.0.1:20172"
+Environment="NO_PROXY=localhost,127.0.0.1,::1,*.local,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+```
+
+## `/etc/docker/daemon.json`
+
+```json
+{
+  "data-root": "/data/uos/40_Containers_VM/docker",
+  "registry-mirrors": [
+    "https://docker.m.daocloud.io"
+  ],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m",
+    "max-file": "3"
+  }
+}
+```
+
+应用：
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+验证：
+
+```bash
+systemctl show --property=Environment docker
+docker info | grep -A 10 -E "Docker Root Dir|Registry Mirrors"
+docker pull hello-world
+docker run --rm hello-world
+```
+
+---
+
+# 六、一个很关键的提醒
+
+你在终端里执行：
+
+```bash
+export http_proxy=http://127.0.0.1:20171
+export https_proxy=http://127.0.0.1:20171
+```
+
+只影响当前 shell 里的 `curl`、`wget` 等程序，**不影响 Docker daemon**。
+
+所以这个能成功：
+
+```bash
+curl -x http://127.0.0.1:20171 https://registry-1.docker.io/v2/
+```
+
+不代表这个一定成功：
+
+```bash
+docker pull hello-world
+```
+
+必须给 `dockerd` 配 systemd 代理。
+
+---
+
+你现在下一步直接做这三条最关键：
+
+```bash
+curl -I -x http://127.0.0.1:20171 https://registry-1.docker.io/v2/
+curl -I -x http://127.0.0.1:20172 https://registry-1.docker.io/v2/
+systemctl show --property=Environment docker
+```
+
+如果 `20171/20172` 其中一个返回 `401 Unauthorized`，就把 Docker daemon 的代理端口改成那个端口，再重启 Docker。
+
+[1]: https://docs.docker.com/engine/daemon/proxy/?utm_source=chatgpt.com "Daemon proxy configuration | Docker Docs"
+[2]: https://docs.docker.com/docker-hub/image-library/mirror/?utm_source=chatgpt.com "Mirror the Docker Hub library | Docker Docs - Docker Documentation"
+
 [6]: https://github.com/Schniz/fnm?utm_source=chatgpt.com "GitHub - Schniz/fnm: Fast and simple Node.js version manager, built ..."
 [7]: https://www.voltajs.com/zh/guide/getting-started.html?utm_source=chatgpt.com "Volta 快速安装配置和入门指南 | Volta"
