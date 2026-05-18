@@ -1144,3 +1144,239 @@ systemctl show --property=Environment docker
 
 [6]: https://github.com/Schniz/fnm?utm_source=chatgpt.com "GitHub - Schniz/fnm: Fast and simple Node.js version manager, built ..."
 [7]: https://www.voltajs.com/zh/guide/getting-started.html?utm_source=chatgpt.com "Volta 快速安装配置和入门指南 | Volta"
+44
+
+--------------------
+有，但要注意：**国内镜像不是把 `https://registry-1.docker.io/v2/` 直接替换成另一个 URL 去测 curl，而是配置 Docker 的 `registry-mirrors`，或者拉镜像时改写镜像名前缀。**
+
+`registry-1.docker.io` 是 Docker Hub 的官方 Registry API 入口。Docker 官方推荐的镜像方式是在 `/etc/docker/daemon.json` 里配置：
+
+```json
+{
+  "registry-mirrors": ["https://<my-docker-mirror-host>"]
+}
+```
+
+然后重启 Docker daemon。([Docker Documentation][1])
+
+# 1. 目前更建议你用哪个国内源？
+
+结合现在的情况，我建议你优先用：
+
+```text
+https://docker.m.daocloud.io
+```
+
+DaoCloud 官方公开镜像说明中给出的 Docker 配置方式就是：
+
+```json
+{
+  "registry-mirrors": [
+    "https://docker.m.daocloud.io"
+  ]
+}
+```
+
+并且它支持 Docker Hub，也支持通过前缀方式拉取，例如 `m.daocloud.io/docker.io/library/nginx`。([GitHub][2])
+
+不建议优先用这些老地址：
+
+```text
+https://docker.mirrors.ustc.edu.cn
+https://registry.docker-cn.com
+http://hub-mirror.c.163.com
+https://dockerhub.azk8s.cn
+```
+
+例如中科大镜像站官方页面已经写明“所有镜像缓存已暂停服务”，并说明 Docker Hub 镜像缓存服务已关闭。([USTC开源软件镜像][3])
+
+阿里云也可以用，但它现在有重要限制：阿里云官方文档说明 ACR 镜像加速“目前已停止同步最新镜像”，如果遇到镜像无法拉取或 `latest` 不是最新，建议改用 ACR 订阅海外源镜像或全球加速等方案。([阿里云帮助中心][4])
+
+# 2. 你的 UOS Docker 推荐配置
+
+编辑：
+
+```bash
+sudo mkdir -p /etc/docker
+sudo nano /etc/docker/daemon.json
+```
+
+建议写成：
+
+```json
+{
+  "data-root": "/data/uos/40_Containers_VM/docker",
+  "registry-mirrors": [
+    "https://docker.m.daocloud.io"
+  ],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m",
+    "max-file": "3"
+  }
+}
+```
+
+然后重启 Docker：
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+检查是否生效：
+
+```bash
+docker info | grep -A 10 -E "Docker Root Dir|Registry Mirrors"
+```
+
+应该能看到类似：
+
+```text
+Docker Root Dir: /data/uos/40_Containers_VM/docker
+Registry Mirrors:
+ https://docker.m.daocloud.io/
+```
+
+然后测试：
+
+```bash
+docker pull hello-world
+docker run --rm hello-world
+```
+
+# 3. 如果 `docker pull hello-world` 仍然超时
+
+可以直接用 DaoCloud 的“前缀方式”拉取。DaoCloud 文档里推荐的方式是给原镜像名前面加 `m.daocloud.io/`，例如 `docker.io/library/busybox` 变成 `m.daocloud.io/docker.io/library/busybox`。([GitHub][2])
+
+你可以试：
+
+```bash
+docker pull m.daocloud.io/docker.io/library/hello-world:latest
+```
+
+然后打标签成本地常规名字：
+
+```bash
+docker tag m.daocloud.io/docker.io/library/hello-world:latest hello-world:latest
+```
+
+再运行：
+
+```bash
+docker run --rm hello-world
+```
+
+也可以试 DaoCloud 的 Docker Hub 前缀替换方式：
+
+```bash
+docker pull docker.m.daocloud.io/library/hello-world:latest
+```
+
+如果这个成功，也可以：
+
+```bash
+docker tag docker.m.daocloud.io/library/hello-world:latest hello-world:latest
+docker run --rm hello-world
+```
+
+# 4. 镜像源和 v2rayA 代理是否还需要同时配？
+
+建议同时保留。
+
+你的最佳组合是：
+
+```text
+Docker registry-mirrors：解决 Docker Hub 拉取慢/超时
+Docker daemon 代理：兜底解决认证、跳转、冷门镜像、非 Docker Hub 源
+```
+
+也就是：
+
+```text
+daemon.json 配 registry-mirrors
+systemd drop-in 配 HTTP_PROXY / HTTPS_PROXY
+```
+
+因为有些镜像源是懒加载缓存，首次请求某些冷门镜像时，镜像站自己需要回源；有些镜像标签也可能延迟。DaoCloud 公开说明其缓存采用懒加载机制，缓存内容保留 90 天，并建议使用明确版本号 tag，`latest` 这种标签可能存在更新延迟。([GitHub][2])
+
+# 5. 给你一套最终命令
+
+```bash
+sudo mkdir -p /etc/docker
+
+sudo tee /etc/docker/daemon.json > /dev/null <<'EOF'
+{
+  "data-root": "/data/uos/40_Containers_VM/docker",
+  "registry-mirrors": [
+    "https://docker.m.daocloud.io"
+  ],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m",
+    "max-file": "3"
+  }
+}
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+
+docker info | grep -A 10 -E "Docker Root Dir|Registry Mirrors"
+
+docker pull hello-world
+docker run --rm hello-world
+```
+
+如果还失败，直接用：
+
+```bash
+docker pull m.daocloud.io/docker.io/library/hello-world:latest
+docker tag m.daocloud.io/docker.io/library/hello-world:latest hello-world:latest
+docker run --rm hello-world
+```
+
+# 6. 判断是否配置成功
+
+成功配置后：
+
+```bash
+docker info
+```
+
+里应该出现：
+
+```text
+Registry Mirrors:
+ https://docker.m.daocloud.io/
+```
+
+但这只说明配置加载成功，不代表每个镜像都一定能拉。真正验证还是：
+
+```bash
+docker pull hello-world
+docker pull alpine:3.20
+docker pull nginx:1.27
+```
+
+以后建议你尽量不要拉 `latest`，而是使用明确版本号，例如：
+
+```bash
+docker pull nginx:1.27
+docker pull redis:7.4
+docker pull postgres:16
+docker pull python:3.12-slim
+```
+
+这比 `latest` 更稳定，也更适合你后面做售前 PoC、演示环境和 Windsurf 开发环境。
+
+[1]: https://docs.docker.com/docker-hub/image-library/mirror/ "Mirror the Docker Hub library | Docker Docs"
+[2]: https://github.com/DaoCloud/public-image-mirror "GitHub - DaoCloud/public-image-mirror: 很多镜像都在国外。比如 gcr 。国内下载很慢，需要加速。致力于提供连接全世界的稳定可靠安全的容器镜像服务。 · GitHub"
+[3]: https://mirrors.ustc.edu.cn/help/dockerhub.html "Docker Hub - USTC Mirror Help"
+[4]: https://help.aliyun.com/zh/acr/user-guide/accelerate-the-pulls-of-docker-official-images "
+    配置官方镜像加速器加速拉取Docker Hub镜像-容器镜像服务-阿里云
+  "
+
+
+
+-----
