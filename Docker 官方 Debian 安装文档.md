@@ -1380,3 +1380,78 @@ docker pull python:3.12-slim
 
 
 -----
+
+让当前用户免 sudo 使用 Docker
+
+执行：
+
+sudo usermod -aG docker "$USER"
+
+然后注销当前桌面会话并重新登录。这是最稳的方式。
+
+如果你不想注销，也可以临时执行：
+
+newgrp docker
+
+然后测试：
+
+docker info | grep -A 10 -E "Docker Root Dir|Registry Mirrors"
+docker run --rm hello-world
+如果提示 docker 组不存在
+
+执行：
+
+sudo groupadd docker
+sudo usermod -aG docker "$USER"
+
+然后注销重登，或：
+
+newgrp docker
+
+再测试。
+
+检查当前用户是否已经加入 docker 组
+groups
+
+应该看到：
+
+docker
+
+也可以执行：
+
+id "$USER"
+
+应看到类似：
+
+groups=...,docker
+检查 docker.sock 权限
+ls -l /var/run/docker.sock
+
+正常应类似：
+
+srw-rw---- 1 root docker ... /var/run/docker.sock
+
+含义是：
+
+root 用户和 docker 组成员可以访问 Docker socket
+
+如果你的用户不在 docker 组，就会报现在这个错误。
+
+最终建议你现在按顺序执行
+sudo docker info | grep -A 10 -E "Docker Root Dir|Registry Mirrors"
+
+sudo groupadd docker 2>/dev/null || true
+sudo usermod -aG docker "$USER"
+
+newgrp docker
+
+docker info | grep -A 10 -E "Docker Root Dir|Registry Mirrors"
+docker run --rm hello-world
+
+如果 newgrp docker 后还不生效，就注销 UOS 桌面账号后重新登录。
+
+提醒一句：加入 docker 组后，该用户基本具备很高的系统控制能力，因为可以通过 Docker 挂载宿主机目录、运行特权容器。你的个人工作机这样配置通常没问题，但不要给不可信账号加 docker 组。
+
+
+
+-------
