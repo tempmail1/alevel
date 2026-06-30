@@ -1,4 +1,4 @@
 # alevel
 
 
-<a href=".\1.html">test link</a>
+<a href=".\index.html">test link</a>
